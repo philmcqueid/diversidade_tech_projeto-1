@@ -1,120 +1,122 @@
 # Sistema de cadastro de turmas
-AREAS_VALIDAS = ["Matemática", "História", "Inglês"]
-DIAS_VALIDOS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"]
-TURNOS_VALIDOS = ["M", "N", "T"]
+VALID_AREAS = ["Matemática", "História", "Inglês"]
+VALID_DAYS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"]
+VALID_SCHEDULES = ["M", "N", "T"]
+registered_classes = []
 
 
-def verificar_dados_inseridos(lista: list, resposta: str) -> bool:
+def check_data(valid_entries: list, user_entry: str) -> bool:
     # Verificar se os dados inseridos pelo usuário realmente estão dentro do escopo do programa.
-    if resposta not in lista:
-        print("Insira somente uma das opções apresentadas.")
+    if user_entry not in valid_entries:
+        # print("Insira somente uma das opções apresentadas.")
         return False
     else:
         return True
 
 
-def validar_dados(area, dia, turno):
+def validate_data(area: str, day: str, class_time: str) -> list:
     # Esta função trata os dados organizando-os em forma de dicionários para que
-    dict_area = {'resposta_usuario': area, 'lista_areas': AREAS_VALIDAS}
-    dict_dia = {'resposta_usuario': dia, 'lista_areas': DIAS_VALIDOS}
-    dict_turno = {'resposta_usuario': turno, 'lista_areas': TURNOS_VALIDOS}
-    lista_geral = [dict_area, dict_dia, dict_turno]
+    dict_area = {'user_entry': area, 'valid_areas': VALID_AREAS}
+    dict_day = {'user_entry': day, 'valid_areas': VALID_DAYS}
+    dict_schedules = {'user_entry': class_time, 'valid_areas': VALID_SCHEDULES}
+    data_compare = [dict_area, dict_day, dict_schedules]
     # Esta lista é composta pelo resultado do retorno de cada valor da lista a cima
-    lista_resposta = [verificar_dados_inseridos(lista=item['lista_areas'], resposta=item['resposta_usuario']) for item
-                      in lista_geral]
-    return lista_resposta  # True ou False
+    result_list = [check_data(valid_entries=item['valid_areas'], user_entry=item['user_entry']) for item in
+                   data_compare]
+    return result_list  # Lista com os valores True ou False
 
 
-# Grupo das turmas já cadastradas
-turmas_cadastradas = []
-
-
-def remover_turma():
+def remove_class():
     # Verificar se há turmas cadastradas
-    if len(turmas_cadastradas) > 0:
-        listar_turmas_cadastradas()
-        resposta = int(input("Qual turma deseja excluir (nº da turma): ")) - 1
-        if resposta < 0 or resposta > len(turmas_cadastradas):
+    if len(registered_classes) > 0:
+        list_registered_classes()
+        resposta = int(input("\n❓QUAL O NÚMERO DA TURMA QUE DESEJA EXCLUIR: ")) - 1
+        if resposta < 0 or resposta > len(registered_classes):
             # Verifica se o número da turma inserido corresponde ao número de turmas cadastradas
-            print("Opção inválida.")
-            remover_turma()
+            print("⚠️OPÇÃO INVÁLIDA⚠️")
+            remove_class()
         else:
-            # Remove a turma através do índice
-            turmas_cadastradas.pop(resposta)
-            print("Turma excluída com sucesso.")
+            registered_classes.pop(resposta)  # Remove a turma através do índice
+            print("✅TURMA EXCLUÍDA COM SUCESSO!✅")
     else:
-        print("NÃO HÁ TURMAS CADASTRADAS.")
+        print("\n⚠️NÃO HÁ TURMAS CADASTRADAS⚠️")
 
 
 # Listagem dos dados da turma
-def listar_turmas_cadastradas():
-    if len(turmas_cadastradas) == 0:
-        print("\n\033[1mNão há turmas cadastradas.\033[1m".upper())
-    for indice in range(len(turmas_cadastradas)):
-        # Estas variáveis são responsáveis apenas para facilitar o entendimento do código
-        turma_atual = turmas_cadastradas[indice]
-        sub_data = turma_atual['dados_da_materia']
-        ##########################################
-        texto_formatado = f"Turma {indice + 1}:\nMatéria: {turma_atual['materia']}\nÁrea: {sub_data['area']} | " \
-                          f"Dia: {sub_data['dia']} | Turno: {sub_data['turno']}\n"
-        print(texto_formatado)
+def list_registered_classes():
+    if len(registered_classes) == 0:
+        print("\n⚠️NÃO HÁ TURMAS CADASTRADAS⚠️")
+    else:
+        print(f"\n{'TURMAS CADASTRADAS' if len(registered_classes) > 1 else 'TURMA CADASTRADA:'}")
+        for class_index in range(len(registered_classes)):
+            # Estas variáveis são responsáveis apenas para facilitar a compreensão do código
+            current_class = registered_classes[class_index]
+            sub_data = current_class['class_data']
+            ##########################################
+            texto_formatado = f"-->📖TURMA {class_index + 1}:\nASSUNTO: {current_class['class_subject']}" \
+                              f"\nÁREA: {sub_data['area']} | " \
+                              f"DIA: {sub_data['day']} | " \
+                              f"TURNO: {sub_data['class_tima']}"
+            print(texto_formatado)
 
 
-"""Esta parte do código é responsável por cadastrar e verificar se a turma já existe na lista"""
-
-
-def verificar(turma: dict):
-    for turma_cadastrada in turmas_cadastradas:
-        if turma['dados_da_materia'] == turma_cadastrada['dados_da_materia']:
+def check_if_class_already_exists(class_to_check: dict) -> bool:
+    for registered_class in registered_classes:
+        if class_to_check['class_data'] == registered_class['class_data']:
             return True
         else:
             return False
 
 
-def cadastrar_nova_turma():
+def format_class_data(theme: str, area: str, day: str, class_time: str) -> dict:
+    # Esta função formata os dados inseridos pelo usuário e retorna um dicionário
+    formatted_class_data = {"class_subject": theme, "class_data": {"area": area, "day": day, "class_tima": class_time}}
+    return formatted_class_data
+
+
+def register_new_class():
+    print("⬇️ INSIRA A BAIXO OS DADOS DA TURMA QUE DESEJA CADASTRAR ⬇️")
     # Recebe os dados do usuário
-    materia = input("Nome da matéria: ").capitalize()
-    area = input("Qual área -  matemática | história | inglês: ").capitalize()
-    dia = input("Dia - segunda | terça | quarta | quinta | sexta: ").capitalize()
-    turno = input("Turno - [M] manhã | [T] tarde | [N] noite: ").upper()
+    class_theme = input("ASSUNTO: ").capitalize().strip()
+    area = input("ÁREA: matemática | história | inglês: ").capitalize().strip()
+    day = input("DIA: segunda | terça | quarta | quinta | sexta: ").capitalize().strip()
+    class_time = input("TURNO: [M] manhã | [T] tarde | [N] noite: ").upper().strip()
 
     # Verifica se os dados inseridos estão de acordo com os dados apresentados (Tratamento).
-    verificacao_de_dados = validar_dados(area, dia, turno)
+    data_verification = validate_data(area=area, day=day, class_time=class_time)
 
-    if False in verificacao_de_dados:
-        cadastrar_nova_turma()
+    if False in data_verification:
+        print(f"⛔ VOCÊ INSERIU ALGUM DADO INVÁLIDO! POR FAVOR TENTE CADASTRAR NOVAMENTE.⛔")
+        register_new_class()
     else:
         # Formatação dos dados em dicionário
-        turma = {"materia": materia, "dados_da_materia": {"area": area, "dia": dia, "turno": turno}}
+        formatted_class_data = format_class_data(theme=class_theme, area=area, day=day, class_time=class_time)
         # Verifica se já existe uma turma da mesma área cadastrada no mesmo horário.
-        ja_existe = verificar(turma)
-        if ja_existe:
-            print(f"Turma de {area} já cadastrada nesse turno.")
-            cadastrar_nova_turma()
+        already_exists = check_if_class_already_exists(formatted_class_data)
+        if already_exists:
+            print(f"\n⚠️TURMA DE {area.upper()} JÁ CADASTRADA NESTE TURNO⚠️")
+            register_new_class()
         else:
-            turmas_cadastradas.append(turma)
-            print("Turma cadastrada com sucesso!")
+            registered_classes.append(formatted_class_data)
+            print("\n✅TURMA CADASTRADA COM SUCESSO!✅")
 
 
-########################################################################################
-
-"""MENU INICIAL"""
-# Controla o funcionamento do programa
+# MENU INICIAR - Controla o funcionamento do programa
 is_on = True
 while is_on:
     # Breve explicação a respeito do funcionamento do programa
-    opcao = input(
+    option = input(
         "\n\033[1mMenu\033[1m\n[1] - Cadastrar Nova Turma\n[2] - Remover Turma\n[3] - Listar turmas\n[0] - "
         "Sair\nEscolha uma opção: ").strip()
 
     # Funções a serem executadas dependendo da escolha do usuário.
-    if opcao == "1":
-        cadastrar_nova_turma()
-    elif opcao == "2":
-        remover_turma()
-    elif opcao == "3":
-        listar_turmas_cadastradas()
-    elif opcao == "0":
+    if option == "1":
+        register_new_class()
+    elif option == "2":
+        remove_class()
+    elif option == "3":
+        list_registered_classes()
+    elif option == "0":
         is_on = False
     else:
         print("Opção inválida")
