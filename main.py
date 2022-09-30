@@ -2,7 +2,19 @@
 VALID_AREAS = ["Matemática", "História", "Inglês"]
 VALID_DAYS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"]
 VALID_SCHEDULES = ["M", "N", "T"]
+DATA_FILE_PATH = "classes_data.csv"
 registered_classes = []
+
+
+def update_database():
+    with open(file=DATA_FILE_PATH, mode="w", encoding="utf-8") as classes_data_file:
+        lines_to_add = []
+        for registered_class in registered_classes:
+            current_class = registered_class['class_subject']
+            current_class_data = registered_class['class_data']
+            formatted_data_to_csv = f"{current_class},{current_class_data['area']},{current_class_data['day']},{current_class_data['class_schedules']}\n"
+            lines_to_add.append(formatted_data_to_csv)
+        classes_data_file.writelines(lines_to_add)
 
 
 def check_data(valid_entries: list, user_entry: str) -> bool:
@@ -37,6 +49,7 @@ def remove_class():
             remove_class()
         else:
             registered_classes.pop(resposta)  # Remove a turma através do índice
+            update_database()
             print("✅TURMA EXCLUÍDA COM SUCESSO!✅")
     else:
         print("\n⚠️NÃO HÁ TURMAS CADASTRADAS⚠️")
@@ -56,7 +69,7 @@ def list_registered_classes():
             texto_formatado = f"-->📖TURMA {class_index + 1}:\nASSUNTO: {current_class['class_subject']}" \
                               f"\nÁREA: {sub_data['area']} | " \
                               f"DIA: {sub_data['day']} | " \
-                              f"TURNO: {sub_data['class_tima']}"
+                              f"TURNO: {sub_data['class_schedules']}"
             print(texto_formatado)
 
 
@@ -70,7 +83,8 @@ def check_if_class_already_exists(class_to_check: dict) -> bool:
 
 def format_class_data(theme: str, area: str, day: str, class_time: str) -> dict:
     # Esta função formata os dados inseridos pelo usuário e retorna um dicionário
-    formatted_class_data = {"class_subject": theme, "class_data": {"area": area, "day": day, "class_tima": class_time}}
+    formatted_class_data = {"class_subject": theme,
+                            "class_data": {"area": area, "day": day, "class_schedules": class_time}}
     return formatted_class_data
 
 
@@ -86,7 +100,7 @@ def register_new_class():
     data_verification = validate_data(area=area, day=day, class_time=class_time)
 
     if False in data_verification:
-        print(f"⛔ VOCÊ INSERIU ALGUM DADO INVÁLIDO! POR FAVOR TENTE CADASTRAR NOVAMENTE.⛔")
+        print("⛔ VOCÊ INSERIU ALGUM DADO INVÁLIDO! POR FAVOR TENTE CADASTRAR NOVAMENTE.⛔")
         register_new_class()
     else:
         # Formatação dos dados em dicionário
@@ -98,8 +112,18 @@ def register_new_class():
             register_new_class()
         else:
             registered_classes.append(formatted_class_data)
+            update_database()
             print("\n✅TURMA CADASTRADA COM SUCESSO!✅")
 
+
+# Carrega a lista das turmas salvas no arquivo csv
+with open(file=DATA_FILE_PATH, mode="r", encoding="utf-8") as classes_data:
+    for line in classes_data.readlines():
+        data_as_list = line.strip().split(",")
+        data_as_list_formatted = format_class_data(theme=data_as_list[0], area=data_as_list[1], day=data_as_list[2],
+                                                   class_time=data_as_list[3])
+
+        registered_classes.append(data_as_list_formatted)
 
 # MENU INICIAR - Controla o funcionamento do programa
 is_on = True
